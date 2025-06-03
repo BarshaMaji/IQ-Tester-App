@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IQ Tester</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f0f4f8;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .question {
+            background: white;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+        }
+        .options label {
+            display: block;
+            margin: 8px 0;
+            cursor: pointer;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 12px 30px;
+            font-size: 16px;
+            background: #007bff;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #result {
+            text-align: center;
+            font-size: 20px;
+            margin-top: 25px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>IQ Tester</h1>
+    <form id="quizForm">
+        {% for q in questions %}
+        <div class="question">
+            <p><strong>{{ loop.index }}. {{ q.question }}</strong></p>
+            <div class="options">
+                {% for opt in q.options %}
+                <label>
+                    <input type="radio" name="{{ q.id }}" value="{{ opt }}" required />
+                    {{ opt }}
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        <button type="submit">Submit Answers</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        const form = document.getElementById('quizForm');
+        const resultDiv = document.getElementById('result');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            let answers = {};
+
+            for (let [key, value] of formData.entries()) {
+                answers[key] = value;
+            }
+
+            const response = await fetch('/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ answers }),
+            });
+
+            const data = await response.json();
+            resultDiv.textContent = `Your Score: ${data.score} / ${data.total} — ${data.result}`;
+        });
+    </script>
+</body>
+</html>
